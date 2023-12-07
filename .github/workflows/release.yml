@@ -1,0 +1,67 @@
+name: Project Release
+
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  build:
+    runs-on: self-hosted
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Grant execute permission to gradlew script
+        run: chmod +x gradlew
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
+          settings-path: ${{ github.workspace }} # location for the settings.xml file
+
+      - name: Build with Gradle
+        uses: gradle/gradle-build-action@67421db6bd0bf253fb4bd25b31ebb98943c375e1
+        with:
+          arguments: build
+
+      - name: Show generated files
+        run: |
+          echo "Generated files:"
+          ls -R build/libs
+
+      - name: Publish to GitHub Packages
+        uses: gradle/gradle-build-action@67421db6bd0bf253fb4bd25b31ebb98943c375e1
+        with:
+          arguments: publish
+        env:
+          USERNAME: ${{ github.actor }}
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload build result
+        uses: actions/upload-artifact@v3.1.2
+        with:
+          name: build-result
+          path: build/libs
+
+  release:
+    name: Download back the built plugins and release them
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download back the built plugins
+        uses: actions/download-artifact@v3
+        with:
+          name: build-result
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v0.1.15
+        with:
+          files: "*"
