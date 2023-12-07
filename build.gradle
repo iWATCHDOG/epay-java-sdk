@@ -25,10 +25,14 @@ test {
 
 publishing {
     publications {
-        maven(MavenPublication) {
-            groupId project.group
-            artifactId "epay-java-sdk"
-            version project.version
+        // 这个mavenJava可以随便填，只是一个任务名字而已
+        // MavenPublication必须有，这个是调用的任务类
+        mavenJava(MavenPublication) {
+            // 这里头是artifacts的配置信息，不填会采用默认的
+            groupId = project.group
+            artifactId = "epay-java-sdk"
+            version = project.version
+
             from components.java
         }
     }
