@@ -1,6 +1,7 @@
 plugins {
     id 'java'
     id "maven-publish"
+    id "com.github.johnrengelman.shadow" version "8.1.1"
 }
 
 group = 'cn.watchdog'
@@ -35,4 +36,12 @@ publishing {
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = "UTF-8"
+}
+
+shadowJar {
+
+}
+
+artifacts {
+    archives shadowJar
 }
